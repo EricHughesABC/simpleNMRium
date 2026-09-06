@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simpleNMRium"
+version = "0.1.0"
+description = "NMRium/NOMAD client for simpleNMR — converts already peak-picked NMRium export JSON and submits it for structure elucidation"
+readme = "README.md"
+license = "MIT"
+authors = [{name = "Eric Hughes", email = "erichughesabc@gmail.com"}]
+requires-python = ">=3.9"
+dependencies = [
+    "simpleNMRbuilder[gui,viewer] @ git+https://github.com/EricHughesABC/simpleNMRbuilder.git",
+    "rdkit>=2023.9.1",
+    "requests>=2.31.0",
+    "fire>=0.5.0",
+]
+# PyQt5 deliberately not listed — same reasoning as simpleNMRjeolTools3:
+# simplenmr_builder[viewer] installs PySide6, and PyQt5 alongside PySide6
+# in one environment has caused confirmed real crashes in this project.
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+]
+
+[project.scripts]
+simplenmr-nmrium = "simplenmrium.simplenmrium_cli:main"
+
+[project.urls]
+Repository = "https://github.com/EricHughesABC/simpleNMRium"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["simplenmrium*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

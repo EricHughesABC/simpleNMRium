@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+.venv/
+venv/
+.DS_Store
+
+# Converted payloads simplenmr-nmrium writes next to the source file
+*_nmrium_inputdata.json
