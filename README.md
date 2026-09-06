@@ -116,7 +116,7 @@ tests/
     test_converter_against_bruker_gold.py
 ```
 
-## Design decisions (confirmed with Eric — not guesses)
+## Design decisions 
 
 - **Spectrum selection reuses the shared dialog.** `simplenmr_builder.gui
   .spectrum_assignment_dialog.SpectrumAssignmentDialog` — the exact same
