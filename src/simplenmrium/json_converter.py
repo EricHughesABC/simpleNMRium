@@ -488,7 +488,22 @@ class NMRiumData:
         builder.set_scalar("carbonCalcPositionsMethod", "Calculated Positions")
         builder.set_scalar("simulatedAnnealing", simulated_annealing)
         builder.set_scalar("ml_consent", ml_consent)
-        builder.set_scalar("workingDirectory", str(self.file_path.parent))
+        # Real bug found 2026-09 (Windows only): a raw Windows path here
+        # (backslash-separated) can contain a backslash immediately
+        # followed by a digit purely by coincidence of the person's own
+        # folder structure (e.g. "...\2025\python\..."). The server
+        # embeds this string unescaped into a JS template literal
+        # (backtick string) in the generated result HTML, and template
+        # literals — unlike plain quoted strings — forbid legacy octal
+        # escape sequences (\2, \02, etc.), which is exactly what
+        # backslash-digit forms as valid-looking JS. Result: "Uncaught
+        # SyntaxError: Octal escape sequences are not allowed in
+        # template strings" when the results viewer opens the page.
+        # Normalizing to forward slashes sidesteps this entirely — valid
+        # on Windows, and can never accidentally form an escape
+        # sequence. workingFilename is just a bare filename (no
+        # separators), so it isn't at risk and is left as-is.
+        builder.set_scalar("workingDirectory", str(self.file_path.parent).replace("\\", "/"))
         builder.set_scalar("workingFilename", self.file_path.name)
 
         builder.set_all_atoms_info(self.all_atoms_info_records)

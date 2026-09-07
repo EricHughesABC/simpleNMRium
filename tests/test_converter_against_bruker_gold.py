@@ -106,6 +106,39 @@ def test_apply_assignments_honors_user_skip():
     assert "HSQC_0" in payload
 
 
+def test_working_directory_has_no_backslashes_even_on_windows_paths():
+    # Regression test for a real bug found 2026-09 on a Windows machine:
+    # a raw backslash-separated path submitted as workingDirectory can
+    # contain a backslash immediately followed by a digit purely from
+    # the person's own folder structure (e.g. "...\2025\python\...").
+    # The server embeds this unescaped into a JS template literal in the
+    # generated results HTML, and template literals forbid legacy octal
+    # escape sequences (\2, \02, ...) — exactly what backslash-digit
+    # looks like — causing "Uncaught SyntaxError: Octal escape sequences
+    # are not allowed in template strings" when the results viewer opens
+    # the page. Bruker's and JEOL's own converters already sanitize this
+    # the same way; this was purely a gap in NMRiumData specifically.
+    from pathlib import PureWindowsPath
+
+    data = NMRiumData(NMRIUM_FILE)
+
+    fake_windows_dir = PureWindowsPath(
+        r"C:\Users\vsmw51\OneDrive - Durham University\projects\programming\2025\python\awh"
+    )
+
+    class FakeWindowsPath:
+        parent = fake_windows_dir
+        name = "exam_CMCse_1_NOMAD-pp.json"
+        suffix = ".json"
+
+    data.file_path = FakeWindowsPath()
+    payload = data.createJsonDict()
+
+    working_dir = payload["workingDirectory"]["data"]["0"]
+    assert "\\" not in working_dir
+    assert working_dir == "C:/Users/vsmw51/OneDrive - Durham University/projects/programming/2025/python/awh"
+
+
 @pytest.mark.skipif(not BRUKER_GOLD.exists(), reason="bruker gold file not found next to this checkout")
 def test_same_molecule_as_bruker_gold(nmrium_payload):
     with open(BRUKER_GOLD) as f:
